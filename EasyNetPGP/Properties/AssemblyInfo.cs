@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("EasyNetPGP")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Easy, straightforward PGP wrapper for .NET Framework.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EasyNetPGP")]
