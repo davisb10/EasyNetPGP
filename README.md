@@ -14,16 +14,17 @@ This package is available on NuGet from the following link:
 
 * Generate Public / Private Key Pairs
 ``` csharp
-    KeyGenerator.GenerateKeyPair("test@gmail.com", "password123", @"C:\Temp");
-    or
-    KeyGenerator.GenerateKeyPair("test@gmail.com", "password123", @"C:\Temp", "private.asc", "public.asc");
+KeyGenerator.GenerateKeyPair("test@gmail.com", "password1", @"C:\Temp");
+
+KeyGenerator.GenerateKeyPair("test@gmail.com", "password1", @"C:\Temp", "private.asc", "public.asc");
 ```
 
 * Encrypt a File
 ``` csharp
-    PgpEncryptorDecryptor.EncryptFile(@"C:\Temp\EncryptedText.txt", @"C:\Temp\PlainText.txt", @"C:\Temp\public.asc");
+PgpEncryptorDecryptor.EncryptFile(@"C:\Temp\SecretText.txt", @"C:\Temp\PlainText.txt", @"C:\Temp\public.asc");
 ```
 
 * Decrypt a File
 ``` csharp
-   PgpEncryptorDecryptor.DecryptFile(@"C:\Temp\EncryptedText.txt", @"C:\Temp\public.asc", "password123", @"C:\Temp\PlainText.txt") 
+PgpEncryptorDecryptor.DecryptFile(@"C:\Temp\SecretText.txt", @"C:\Temp\public.asc", "password1", @"C:\Temp\PlainText.txt");
+``` 
