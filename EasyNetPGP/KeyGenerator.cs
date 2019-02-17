@@ -11,46 +11,45 @@ using System.IO;
 namespace EasyNetPGP
 {
     /// <summary>
-    /// Used to generate PGP Public and Private Key Pairs.
+    ///     Used to generate PGP Public and Private Key Pairs.
     /// </summary>
     public static class KeyGenerator
     {
         /// <summary>
-        /// Generates a Public and Private Key Pair.
+        ///     Generates a Public and Private Key Pair.
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
-        /// <param name="keyStoreUrl">Folder Name where the Keys will be stored.</param>
+        /// <param name="keyStorePath">Folder Name where the Keys will be stored.</param>
         /// <param name="privateKeyFileName">Name of the Private Key File.</param>
         /// <param name="publicKeyFileName">Name of the Public Key File.</param>
         /// <exception cref="ArgumentException">Invalid Parameter Values</exception>
-        public static void GenerateKeyPair(string username, string password, string keyStoreUrl, string privateKeyFileName = "PGPPrivateKey.asc", string publicKeyFileName = "PGPPublicKey.asc")
+        public static void GenerateKeyPair(string username, string password, string keyStorePath, string privateKeyFileName = "PGPPrivateKey.asc", string publicKeyFileName = "PGPPublicKey.asc")
         {
-            //Parameter Checks
+            // Parameter Checks
             if (String.IsNullOrEmpty(username)) { throw new ArgumentException("Username Parameter is invalid."); }
             if (String.IsNullOrEmpty(password)) { throw new ArgumentException("Password Parameter is invalid."); }
-            if (String.IsNullOrEmpty(keyStoreUrl)) { throw new ArgumentException("Key Store Url Parameter is invalid."); }
+            if (String.IsNullOrEmpty(keyStorePath)) { throw new ArgumentException("Key Store Path Parameter is invalid."); }
             if (String.IsNullOrEmpty(privateKeyFileName)) { throw new ArgumentException("Private Key File Name Parameter is invalid."); }
             if (String.IsNullOrEmpty(publicKeyFileName)) { throw new ArgumentException("Public Key File Name Parameter is invalid."); }
 
             if (!privateKeyFileName.ToLower().EndsWith(".asc")) { throw new ArgumentException("Private Key File Extension is not valid."); }
             if (!publicKeyFileName.ToLower().EndsWith(".asc")) { throw new ArgumentException("Public Key File Extension is not valid."); }
 
-            if (!Directory.Exists(keyStoreUrl)) { throw new ArgumentException("Key Store Url Parameter does not match an existing directory."); }
-
+            if (!Directory.Exists(keyStorePath)) { throw new ArgumentException("Key Store Path Parameter does not match an existing directory."); }
 
             IAsymmetricCipherKeyPairGenerator _keyPairGenerator = new RsaKeyPairGenerator();
             _keyPairGenerator.Init(new RsaKeyGenerationParameters(BigInteger.ValueOf(0x13), new SecureRandom(), 1024, 8));
             AsymmetricCipherKeyPair _keyPair = _keyPairGenerator.GenerateKeyPair();
-            FileStream _fileStreamPrivate = new FileInfo(Path.Combine(keyStoreUrl, privateKeyFileName)).OpenWrite();
-            FileStream _fileStreamPublic = new FileInfo(Path.Combine(keyStoreUrl, publicKeyFileName)).OpenWrite();
+            FileStream _fileStreamPrivate = new FileInfo(Path.Combine(keyStorePath, privateKeyFileName)).OpenWrite();
+            FileStream _fileStreamPublic = new FileInfo(Path.Combine(keyStorePath, publicKeyFileName)).OpenWrite();
             ExportKeyPair(_fileStreamPrivate, _fileStreamPublic, _keyPair.Public, _keyPair.Private, username, password.ToCharArray(), true);
-            _fileStreamPrivate.Close();
-            _fileStreamPublic.Close();
+            _fileStreamPrivate.Dispose();
+            _fileStreamPublic.Dispose();
         }
 
         /// <summary>
-        /// Private method that exports the keys to their respective files. 
+        ///     Private method that exports the keys to their respective files. 
         /// </summary>
         /// <param name="secretOut"></param>
         /// <param name="publicOut"></param>
@@ -68,14 +67,14 @@ namespace EasyNetPGP
 
             PgpSecretKey _secretKey = new PgpSecretKey(PgpSignature.DefaultCertification, PublicKeyAlgorithmTag.RsaGeneral, publicKey, privateKey, DateTime.Now, identity, SymmetricKeyAlgorithmTag.Cast5, passPhrase, null, null, new SecureRandom());
             _secretKey.Encode(secretOut);
-            secretOut.Close();
+            secretOut.Dispose();
             if (armor)
             {
                 publicOut = new ArmoredOutputStream(publicOut);
             }
             PgpPublicKey _publicKey = _secretKey.PublicKey;
             _publicKey.Encode(publicOut);
-            publicOut.Close();
+            publicOut.Dispose();
         }
     }
 }

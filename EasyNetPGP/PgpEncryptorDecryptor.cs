@@ -4,18 +4,33 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.IO;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EasyNetPGP
 {
     /// <summary>
-    /// Used for Encryption and Decryption of files using PGP.
+    ///     Used for Encryption and Decryption of files using PGP.
     /// </summary>
     public class PgpEncryptorDecryptor
     {
         #region Encryption
 
         /// <summary>
-        /// Encrypts an input file given the provided Public Key File.
+        ///     Asynchronously encrypts an input file given the provided Public Key File.
+        /// </summary>
+        /// <param name="outputFilePath"></param>
+        /// <param name="inputFilePath"></param>
+        /// <param name="publicKeyFilePath"></param>
+        /// <param name="armor"></param>
+        /// <param name="withIntegrityCheck"></param>
+        /// <returns></returns>
+        public async Task EncryptFileAsync(string outputFilePath, string inputFilePath, string publicKeyFilePath, bool armor = true, bool withIntegrityCheck = true)
+        {
+            await Task.Run(() => EncryptFile(inputFilePath, outputFilePath, publicKeyFilePath, armor, withIntegrityCheck));
+        }
+
+        /// <summary>
+        ///     Encrypts an input file given the provided Public Key File.
         /// </summary>
         /// <param name="outputFilePath">Path of new encrypted output file.</param>
         /// <param name="inputFilePath">Path of existing unencrypted input file.</param>
@@ -32,7 +47,7 @@ namespace EasyNetPGP
             if (String.IsNullOrEmpty(publicKeyFilePath)) { throw new ArgumentException("Public Key File Name Parameter is invalid."); }
 
             if (!File.Exists(inputFilePath)) { throw new FileNotFoundException("Input File does not exist."); }
-            if (!File.Exists(publicKeyFilePath)) { throw new FileNotFoundException("Public Key File does not exist"); }
+            if (!File.Exists(publicKeyFilePath)) { throw new FileNotFoundException("Public Key File does not exist."); }
 
             PgpPublicKey _publicKey = PgpCustomUtilities.ReadPublicKey(publicKeyFilePath);
 
@@ -43,7 +58,7 @@ namespace EasyNetPGP
         }
 
         /// <summary>
-        /// Encrypts an input file stream given the provided Public Key File.
+        ///     Encrypts an input file stream given the provided Public Key File.
         /// </summary>
         /// <param name="outputFileStream">File Stream of the new encrypted output file.</param>
         /// <param name="inputFilePath">Path of existing unencrypted input file.</param>
@@ -52,7 +67,7 @@ namespace EasyNetPGP
         /// <param name="withIntegrityCheck">Include Integrity Check</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
-        public static void EncryptFile(Stream outputFileStream, string inputFilePath, PgpPublicKey publicKey, bool armor = true, bool withIntegrityCheck = true)
+        private static void EncryptFile(Stream outputFileStream, string inputFilePath, PgpPublicKey publicKey, bool armor = true, bool withIntegrityCheck = true)
         {
             // Parameter Checks
             if (String.IsNullOrEmpty(inputFilePath)) { throw new ArgumentException("Input File Name Parameter is invalid."); }
@@ -74,14 +89,18 @@ namespace EasyNetPGP
 
                 PgpCompressedDataGenerator _compressedDataGen = new PgpCompressedDataGenerator(CompressionAlgorithmTag.Zip);
 
-                PgpUtilities.WriteFileToLiteralData(_compressedDataGen.Open(_encryptedOutStream), PgpLiteralData.Binary, new FileInfo(inputFilePath), new byte[1 << 16]);
+                FileInfo inputFile = new FileInfo(inputFilePath);
+                Stream inputFileStream = File.OpenRead(inputFile.FullName);
+
+                PgpCustomUtilities.WriteStreamToLiteralData(_compressedDataGen.Open(_encryptedOutStream), PgpLiteralData.Binary, inputFileStream, inputFile.Name);
 
                 _compressedDataGen.Close();
-                _encryptedOutStream.Close();
+                _encryptedOutStream.Dispose();
+                inputFileStream.Dispose();
 
                 if (armor)
                 {
-                    outputFileStream.Close();
+                    outputFileStream.Dispose();
                 }
             }
             catch (PgpException ex)
@@ -102,47 +121,58 @@ namespace EasyNetPGP
         #region Decryption
 
         /// <summary>
-        /// Decrypts the Input File, given the Private Key File, to the specified Decrypted File Path.
+        ///     Asynchronously decrypts the Input File, given the Private Key File, to the specified Decrypted File Path.
         /// </summary>
-        /// <param name="inputFilePath">Path to existing encrypted file.</param>
-        /// <param name="privateKeyFilePath">Path to existing Private Key.</param>
+        /// <param name="inputFilePath">Full Path to existing encrypted file.</param>
+        /// <param name="privateKeyFilePath">Full Path to existing Private Key.</param>
         /// <param name="password">Password that was used to encrypt the file.</param>
-        /// <param name="decryptedFileName">Path of the new decrypted file.</param>
+        /// <param name="decryptedFilePath"></param>
+        /// <returns></returns>
+        public async Task DecryptFileAsync(string inputFilePath, string privateKeyFilePath, string password, string decryptedFilePath)
+        {
+            await Task.Run(() => DecryptFile(inputFilePath, privateKeyFilePath, password, decryptedFilePath));
+        }
+
+        /// <summary>
+        ///     Decrypts the Input File, given the Private Key File, to the specified Decrypted File Path.
+        /// <para />
+        ///     Note: if
+        /// </summary>
+        /// <param name="inputFilePath">Full Path to existing encrypted file.</param>
+        /// <param name="privateKeyFilePath">Full Path to existing Private Key.</param>
+        /// <param name="password">Password that was used to encrypt the file.</param>
+        /// <param name="decryptedFilePath">Full Path of the new decrypted file.</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
-        public static void DecryptFile(string inputFilePath, string privateKeyFilePath, string password, string decryptedFileName)
+        public static void DecryptFile(string inputFilePath, string privateKeyFilePath, string password, string decryptedFilePath)
         {
             // Parameter Checks
-            if (String.IsNullOrEmpty(inputFilePath)) { throw new ArgumentException("Input File Name Parameter is invalid."); }
-            if (String.IsNullOrEmpty(privateKeyFilePath)) { throw new ArgumentException("Private Key File Name is invalid"); }
-            if (String.IsNullOrEmpty(password)) { throw new ArgumentException("Password Parameter is invalid"); }
-            if (String.IsNullOrEmpty(decryptedFileName)) { throw new ArgumentException("Decrypted File Name Parameter is invalid."); }
+            if (String.IsNullOrEmpty(inputFilePath)) { throw new ArgumentException("Input File Path Parameter is invalid."); }
+            if (String.IsNullOrEmpty(privateKeyFilePath)) { throw new ArgumentException("Private Key File Path Parameter is invalid."); }
+            if (String.IsNullOrEmpty(password)) { throw new ArgumentException("Password Parameter is invalid."); }
+            if (String.IsNullOrEmpty(decryptedFilePath)) { throw new ArgumentException("Decrypted File Path Parameter is invalid."); }
 
             if (!File.Exists(inputFilePath)) { throw new FileNotFoundException("Input File does not exist."); }
             if (!File.Exists(privateKeyFilePath)) { throw new FileNotFoundException("Private Key File does not exist."); }
 
+            if (File.Exists(decryptedFilePath)) { throw new ArgumentException("Decrypted File already exists."); }
+
             using (Stream inputFileStream = File.OpenRead(inputFilePath))
             using (Stream privateKeyFileStream = File.OpenRead(privateKeyFilePath))
             {
-                DecryptFile(inputFileStream, privateKeyFileStream, password, decryptedFileName);
+                DecryptFile(inputFileStream, privateKeyFileStream, password, decryptedFilePath);
             }
         }
 
         /// <summary>
-        /// Decrypts the Input File stream, given the Private Key File stream, to the specified Decrypted File Path.
+        ///     Decrypts the Input File stream, given the Private Key File stream, to the specified Decrypted File Path.
         /// </summary>
         /// <param name="inputFileStream">File Stream of encrypted file.</param>
         /// <param name="privateKeyFileStream">File Stream of Private Key file.</param>
         /// <param name="password">Password that was used to encrypt the file.</param>
-        /// <param name="decryptedFilePath">Path of the new decrypted file.</param>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="PgpException"></exception>
+        /// <param name="decryptedFilePath">Full Path of the new decrypted file.</param>
         private static void DecryptFile(Stream inputFileStream, Stream privateKeyFileStream, string password, string decryptedFilePath)
         {
-            // Parameter Checks
-            if (String.IsNullOrEmpty(password)) { throw new ArgumentException("Password Parameter is invalid."); }
-            if (String.IsNullOrEmpty(decryptedFilePath)) { throw new ArgumentException("Decrypted File Name Parameter is invalid."); }
-
             inputFileStream = PgpUtilities.GetDecoderStream(inputFileStream);
 
             PgpObjectFactory _pgpObjectFactory = new PgpObjectFactory(inputFileStream);
@@ -173,7 +203,7 @@ namespace EasyNetPGP
                 }
             }
 
-            if (_pgpPrivateKey == null) { throw new ArgumentException("secret key for message not found."); }
+            if (_pgpPrivateKey == null) { throw new ArgumentException("Secret key for message not found."); }
 
             Stream _privateKeyFileStream = _pgpPubKeyEncryptedData.GetDataStream(_pgpPrivateKey);
 
@@ -185,28 +215,50 @@ namespace EasyNetPGP
 
             PgpObject _pgpObjectMessage = _pgpObjectFactoryCompressedData.NextPgpObject();
 
-            if (_pgpObjectMessage is PgpLiteralData)
+            if (_pgpObjectMessage is PgpLiteralData _pgpLiteralData)
             {
-                PgpLiteralData _pgpLiteralData = (PgpLiteralData)_pgpObjectMessage;
+                FileInfo _decryptedFileInfo = new FileInfo(decryptedFilePath);
 
-                string _outputFileName = _pgpLiteralData.FileName;
-                string _outputFileDirectoryPath;
-                Stream _outputFileStream;
-                if (_outputFileName.Length == 0)
-                {
-                    _outputFileName = decryptedFilePath;
-                    _outputFileStream = File.Create(_outputFileName);
-                }
-                else
-                {
-                    FileInfo _decryptedFileInfo = new FileInfo(decryptedFilePath);
-                    _outputFileDirectoryPath = _decryptedFileInfo.DirectoryName;
-                    _outputFileStream = File.Create(Path.Combine(_outputFileDirectoryPath, _outputFileName));
-                }
+                string _outputFileName = _decryptedFileInfo.Name;
+                string _outputFileDirectoryPath = _decryptedFileInfo.DirectoryName;
+                Stream _outputFileStream = File.Create(Path.Combine(_outputFileDirectoryPath, _outputFileName));
 
                 Stream _dataInputStream = _pgpLiteralData.GetInputStream();
                 Streams.PipeAll(_dataInputStream, _outputFileStream);
-                _outputFileStream.Close();
+                _outputFileStream.Dispose();
+            }
+            else if (_pgpObjectMessage is PgpCompressedData compressedData)
+            {
+                PgpObjectFactory of = null;
+
+                using (Stream compressedDataInStream = compressedData.GetDataStream())
+                {
+                    of = new PgpObjectFactory(compressedDataInStream);
+                }
+
+                FileInfo _decryptedFileInfo = new FileInfo(decryptedFilePath);
+
+                string _outputFileName = _decryptedFileInfo.Name;
+                string _outputFileDirectoryPath = _decryptedFileInfo.DirectoryName;
+                Stream _outputFileStream = File.Create(Path.Combine(_outputFileDirectoryPath, _outputFileName));
+
+                _pgpObjectMessage = of.NextPgpObject();
+                if (_pgpObjectMessage is PgpOnePassSignatureList)
+                {
+                    _pgpObjectMessage = of.NextPgpObject();
+                    PgpLiteralData literalData = null;
+                    literalData = (PgpLiteralData)_pgpObjectMessage;
+                    Stream inputStream = literalData.GetInputStream();
+                    Streams.PipeAll(inputStream, _outputFileStream);
+                }
+                else
+                {
+                    PgpLiteralData literalData = null;
+                    literalData = (PgpLiteralData)_pgpObjectMessage;
+                    Stream inputStream = literalData.GetInputStream();
+                    Streams.PipeAll(inputStream, _outputFileStream);
+                }
+                _outputFileStream.Dispose();
             }
             else if (_pgpObjectMessage is PgpOnePassSignatureList) { throw new PgpException("Encrypted message contains a signed message - not literal data."); }
             else { throw new PgpException("Message is not a simple encrypted file - type unknown."); }
@@ -217,6 +269,6 @@ namespace EasyNetPGP
             }
         }
 
-        #endregion
+#endregion
     }
 }

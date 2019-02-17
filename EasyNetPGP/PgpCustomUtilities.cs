@@ -6,12 +6,12 @@ using System.IO;
 namespace EasyNetPGP
 {
     /// <summary>
-    /// Custom PGP Utility Methods.
+    ///     Custom PGP Utility Methods.
     /// </summary>
     internal class PgpCustomUtilities
     {
         /// <summary>
-        /// Compresses a file using the specified Compression Algorithm.
+        ///     Compresses a file using the specified Compression Algorithm.
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="algorithm"></param>
@@ -24,16 +24,19 @@ namespace EasyNetPGP
 
             MemoryStream _memoryStream = new MemoryStream();
             PgpCompressedDataGenerator _compressedDataGen = new PgpCompressedDataGenerator(algorithm);
-            PgpUtilities.WriteFileToLiteralData(_compressedDataGen.Open(_memoryStream), PgpLiteralData.Binary, new FileInfo(fileName));
+            FileInfo inputFile = new FileInfo(fileName);
+            Stream inputFileStream = File.OpenRead(inputFile.FullName);
+            WriteStreamToLiteralData(_compressedDataGen.Open(_memoryStream), PgpLiteralData.Binary, inputFileStream, inputFile.Name);
             _compressedDataGen.Close();
+            inputFileStream.Dispose();
             return _memoryStream.ToArray();
         }
 
         /// <summary>
-        /// Search a secret key ring collection for a secret key corresponding to keyID if it exists.
+        ///     Search a secret key ring collection for a secret key corresponding to keyID if it exists.
         /// </summary>
         /// <param name="secretKeyRingBundle"></param>
-        /// <param name="keyID"></param>
+        /// <param name="keyId"></param>
         /// <param name="passPhrase"></param>
         /// <returns></returns>
         /// <exception cref="PgpException"></exception>
@@ -49,6 +52,11 @@ namespace EasyNetPGP
             return _pgpSecretKey.ExtractPrivateKey(passPhrase);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         internal static PgpPublicKey ReadPublicKey(string fileName)
         {
             using (Stream _publicKeyStream = File.OpenRead(fileName))
@@ -58,7 +66,7 @@ namespace EasyNetPGP
         }
 
         /// <summary>
-        /// Opens a key ring file and loads the first available key suitable for encryption.
+        ///     Opens a key ring file and loads the first available key suitable for encryption.
         /// </summary>
         /// <param name="inputStream"></param>
         /// <returns></returns>
@@ -83,7 +91,7 @@ namespace EasyNetPGP
         }
 
         /// <summary>
-        /// Gets a PgpSecretKey from a given file.
+        ///     Gets a PgpSecretKey from a given file.
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
@@ -99,7 +107,7 @@ namespace EasyNetPGP
         }
 
         /// <summary>
-        /// Opens a key ring file and loads the first available key suitable for signature generation.
+        ///     Opens a key ring file and loads the first available key suitable for signature generation.
         /// </summary>
         /// <param name="inputStream"></param>
         /// <returns></returns>
@@ -121,6 +129,24 @@ namespace EasyNetPGP
             }
 
             throw new ArgumentException("Signing key not found in key ring.");
+        }
+
+        public static void WriteStreamToLiteralData(Stream output, char fileType, Stream input, string name)
+        {
+            PgpLiteralDataGenerator lData = new PgpLiteralDataGenerator();
+            Stream pOut = lData.Open(output, fileType, name, input.Length, DateTime.Now);
+            PipeStreamContents(input, pOut, 4096);
+        }
+
+        private static void PipeStreamContents(Stream inStream, Stream outStream, int bufferSize)
+        {
+            byte[] buffer = new byte[bufferSize];
+
+            int len;
+            while ((len = inStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                outStream.Write(buffer, 0, len);
+            }
         }
     }
 }
