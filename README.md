@@ -1,4 +1,4 @@
-﻿|AppVeyor|
+|AppVeyor|
 |--------|
 |[![Build status](https://ci.appveyor.com/api/projects/status/1yrq30re0bctbjvm?svg=true)](https://ci.appveyor.com/project/davisb10/easynetpgp)|
 
@@ -6,7 +6,7 @@
 
 EasyNetPGP is an easy and straightforward PGP wrapper Library for .NET Framework / .NET Core.
 
-The BouncyCastle Cryptography Libraries are utilized for Key Pair Generation, as well as Encryption and Decryption of files. 
+The BouncyCastle Cryptography Libraries are utilized for Key Pair Generation, as well as Encryption and Decryption of files.
 
 ## Target Frameworks
 
