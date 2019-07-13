@@ -60,18 +60,14 @@ namespace EasyNetPGP
         /// <param name="armor"></param>
         private static void ExportKeyPair(Stream secretOut, Stream publicOut, AsymmetricKeyParameter publicKey, AsymmetricKeyParameter privateKey, string identity, char[] passPhrase, bool armor)
         {
-            if (armor)
-            {
-                secretOut = new ArmoredOutputStream(secretOut);
-            }
+            if (armor) secretOut = new ArmoredOutputStream(secretOut);
 
             PgpSecretKey _secretKey = new PgpSecretKey(PgpSignature.DefaultCertification, PublicKeyAlgorithmTag.RsaGeneral, publicKey, privateKey, DateTime.Now, identity, SymmetricKeyAlgorithmTag.Cast5, passPhrase, null, null, new SecureRandom());
             _secretKey.Encode(secretOut);
             secretOut.Dispose();
-            if (armor)
-            {
-                publicOut = new ArmoredOutputStream(publicOut);
-            }
+
+            if (armor) publicOut = new ArmoredOutputStream(publicOut);
+
             PgpPublicKey _publicKey = _secretKey.PublicKey;
             _publicKey.Encode(publicOut);
             publicOut.Dispose();

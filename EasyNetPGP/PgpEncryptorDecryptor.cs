@@ -74,10 +74,7 @@ namespace EasyNetPGP
 
             if (!File.Exists(inputFilePath)) { throw new FileNotFoundException("Input File does not exist."); }
 
-            if (armor)
-            {
-                outputFileStream = new ArmoredOutputStream(outputFileStream);
-            }
+            if (armor) outputFileStream = new ArmoredOutputStream(outputFileStream);
 
             try
             {

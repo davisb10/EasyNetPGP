@@ -44,12 +44,7 @@ namespace EasyNetPGP
         {
             PgpSecretKey _pgpSecretKey = secretKeyRingBundle.GetSecretKey(keyId);
 
-            if (_pgpSecretKey == null)
-            {
-                return null;
-            }
-
-            return _pgpSecretKey.ExtractPrivateKey(passPhrase);
+            return _pgpSecretKey?.ExtractPrivateKey(passPhrase);
         }
 
         /// <summary>
