@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EasyNetPGP</name>
+    </assembly>
+    <members>
+        <member name="T:EasyNetPGP.KeyGenerator">
+            <summary>
+                Used to generate PGP Public and Private Key Pairs.
+            </summary>
+        </member>
+        <member name="M:EasyNetPGP.KeyGenerator.GenerateKeyPair(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+                Generates a Public and Private Key Pair.
+            </summary>
+            <param name="username"></param>
+            <param name="password"></param>
+            <param name="keyStorePath">Folder Name where the Keys will be stored.</param>
+            <param name="privateKeyFileName">Name of the Private Key File.</param>
+            <param name="publicKeyFileName">Name of the Public Key File.</param>
+            <exception cref="T:System.ArgumentException">Invalid Parameter Values</exception>
+        </member>
+        <member name="M:EasyNetPGP.KeyGenerator.ExportKeyPair(System.IO.Stream,System.IO.Stream,Org.BouncyCastle.Crypto.AsymmetricKeyParameter,Org.BouncyCastle.Crypto.AsymmetricKeyParameter,System.String,System.Char[],System.Boolean)">
+            <summary>
+                Private method that exports the keys to their respective files. 
+            </summary>
+            <param name="secretOut"></param>
+            <param name="publicOut"></param>
+            <param name="publicKey"></param>
+            <param name="privateKey"></param>
+            <param name="identity"></param>
+            <param name="passPhrase"></param>
+            <param name="armor"></param>
+        </member>
+        <member name="T:EasyNetPGP.PgpCustomUtilities">
+            <summary>
+                Custom PGP Utility Methods.
+            </summary>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.CompressFile(System.String,Org.BouncyCastle.Bcpg.CompressionAlgorithmTag)">
+            <summary>
+                Compresses a file using the specified Compression Algorithm.
+            </summary>
+            <param name="fileName"></param>
+            <param name="algorithm"></param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.FindSecretKey(Org.BouncyCastle.Bcpg.OpenPgp.PgpSecretKeyRingBundle,System.Int64,System.Char[])">
+            <summary>
+                Search a secret key ring collection for a secret key corresponding to keyID if it exists.
+            </summary>
+            <param name="secretKeyRingBundle"></param>
+            <param name="keyId"></param>
+            <param name="passPhrase"></param>
+            <returns></returns>
+            <exception cref="T:Org.BouncyCastle.Bcpg.OpenPgp.PgpException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.ReadPublicKey(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.ReadPublicKey(System.IO.Stream)">
+            <summary>
+                Opens a key ring file and loads the first available key suitable for encryption.
+            </summary>
+            <param name="inputStream"></param>
+            <returns></returns>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:Org.BouncyCastle.Bcpg.OpenPgp.PgpException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.ReadSecretKey(System.String)">
+            <summary>
+                Gets a PgpSecretKey from a given file.
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EasyNetPGP.PgpCustomUtilities.ReadSecretKey(System.IO.Stream)">
+            <summary>
+                Opens a key ring file and loads the first available key suitable for signature generation.
+            </summary>
+            <param name="inputStream"></param>
+            <returns></returns>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:Org.BouncyCastle.Bcpg.OpenPgp.PgpException"></exception>
+        </member>
+        <member name="T:EasyNetPGP.PgpEncryptorDecryptor">
+            <summary>
+                Used for Encryption and Decryption of files using PGP.
+            </summary>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.EncryptFileAsync(System.String,System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+                Asynchronously encrypts an input file given the provided Public Key File.
+            </summary>
+            <param name="outputFilePath"></param>
+            <param name="inputFilePath"></param>
+            <param name="publicKeyFilePath"></param>
+            <param name="armor"></param>
+            <param name="withIntegrityCheck"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.EncryptFile(System.String,System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+                Encrypts an input file given the provided Public Key File.
+            </summary>
+            <param name="outputFilePath">Path of new encrypted output file.</param>
+            <param name="inputFilePath">Path of existing unencrypted input file.</param>
+            <param name="publicKeyFilePath">Path of existing Pgp Public Key file.</param>
+            <param name="armor">Use ASCII Armor</param>
+            <param name="withIntegrityCheck">Include Integrity Check</param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.EncryptFile(System.IO.Stream,System.String,Org.BouncyCastle.Bcpg.OpenPgp.PgpPublicKey,System.Boolean,System.Boolean)">
+            <summary>
+                Encrypts an input file stream given the provided Public Key File.
+            </summary>
+            <param name="outputFileStream">File Stream of the new encrypted output file.</param>
+            <param name="inputFilePath">Path of existing unencrypted input file.</param>
+            <param name="publicKey">PgpPublicKey that will be used to encrypt the file.</param>
+            <param name="armor">Use ASCII Armor</param>
+            <param name="withIntegrityCheck">Include Integrity Check</param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.DecryptFileAsync(System.String,System.String,System.String,System.String)">
+            <summary>
+                Asynchronously decrypts the Input File, given the Private Key File, to the specified Decrypted File Path.
+            </summary>
+            <param name="inputFilePath">Full Path to existing encrypted file.</param>
+            <param name="privateKeyFilePath">Full Path to existing Private Key.</param>
+            <param name="password">Password that was used to encrypt the file.</param>
+            <param name="decryptedFilePath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.DecryptFile(System.String,System.String,System.String,System.String)">
+            <summary>
+                Decrypts the Input File, given the Private Key File, to the specified Decrypted File Path.
+            <para />
+                Note: if
+            </summary>
+            <param name="inputFilePath">Full Path to existing encrypted file.</param>
+            <param name="privateKeyFilePath">Full Path to existing Private Key.</param>
+            <param name="password">Password that was used to encrypt the file.</param>
+            <param name="decryptedFilePath">Full Path of the new decrypted file.</param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+        </member>
+        <member name="M:EasyNetPGP.PgpEncryptorDecryptor.DecryptFile(System.IO.Stream,System.IO.Stream,System.String,System.String)">
+            <summary>
+                Decrypts the Input File stream, given the Private Key File stream, to the specified Decrypted File Path.
+            </summary>
+            <param name="inputFileStream">File Stream of encrypted file.</param>
+            <param name="privateKeyFileStream">File Stream of Private Key file.</param>
+            <param name="password">Password that was used to encrypt the file.</param>
+            <param name="decryptedFilePath">Full Path of the new decrypted file.</param>
+        </member>
+    </members>
+</doc>

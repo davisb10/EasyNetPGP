@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Version>2.1.0</Version>
+    <Authors>davisb10</Authors>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/davisb10/EasyNetPGP</RepositoryUrl>
+    <Copyright>Copyright 2019</Copyright>
+    <Description>Easy, straightforward PGP wrapper for .NET Framework / .NET Core.</Description>
+    <PackageTags>pgp encryption decryption boucycastle</PackageTags>
+    <PackageReleaseNotes>Update to BouncyCastle.NetCore version 1.8.5</PackageReleaseNotes>
+    <PackageLicenseUrl>LICENSE.txt</PackageLicenseUrl>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard1.3|AnyCPU'">
+    <DocumentationFile>Z:\VisualStudio2017\EasyNetPGP\EasyNetPGP\EasyNetPGP.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.8.5" />
+  </ItemGroup>
+
+</Project>
